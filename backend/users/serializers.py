@@ -31,23 +31,25 @@ class RegisterSerializer(serializers.ModelSerializer):
            if attrs['password'] != attrs['password2']:
                  raise serializers.ValidationError({'error':'passwords do not match.'})
            return attrs
+     
       def create(self, validated_data):
             validated_data.pop('password2')
             user = get_user_model().objects.create_user(
                   email=validated_data['email'],
                   first_name=validated_data['first_name'],
                   last_name=validated_data['last_name'],
-                  nickname=validated_data.get('nickname')
+                  nickname=validated_data.get('nickname'),
+                  password=validated_data['password']
                   )
             user.set_password(validated_data['password'])
             user.save()
-            Profile.objects.create(user=user)
+            Profile.objects.get_or_create(user=user)
             return user
       
 class ProfileUpdateSerializer(serializers.ModelSerializer):
       class Meta:
             model = Profile
-            fields = ['first_name','last_name','profile_photo','bio','date_of_birth','nickname']
+            fields = ['first_name','last_name','profile_photo','bio','date_of_birth','user__nickname']
             
       def validate_nickname(self,value):
             user = self.context['request'].user
@@ -57,5 +59,5 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
       
       
 class LoginSerializer(serializers.Serializer):
-      username = serializers.CharField(required=True)
+      email = serializers.EmailField(required=True)
       password = serializers.CharField(required=True,write_only=True,style={'input_type':'password'})

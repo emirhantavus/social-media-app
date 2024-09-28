@@ -7,7 +7,8 @@ from rest_framework_simplejwt.views import (
 from users.views import (
       RegisterView,
       LoginView,
-      UserProfileView
+      UserProfileView,
+      UserList
 )
 from django.conf import settings
 from django.conf.urls.static import static
@@ -18,6 +19,7 @@ urlpatterns = [
       path('profile/<int:pk>',UserProfileView.as_view(),name='user_profile'),
       path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
       path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+      path('',UserList.as_view(),name='user_list')
 ]
 
 if settings.DEBUG:

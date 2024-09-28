@@ -5,6 +5,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from django.contrib.auth import authenticate
+from django.db import IntegrityError
+from rest_framework import serializers
 
 class RegisterView(generics.CreateAPIView):
       queryset = Account.objects.all()
@@ -13,8 +15,20 @@ class RegisterView(generics.CreateAPIView):
       
       def perform_create(self, serializer):
             user = serializer.save()
-            Profile.objects.create(user=user)
-      
+            try:
+                  Profile.objects.get(user=user)
+            except Profile.DoesNotExist:
+                  Profile.objects.create(user=user)
+            except IntegrityError:
+                  raise serializers.ValidationError("Profile already exists.")
+            
+class UserList(APIView):
+      def get(self,request):
+            users = Account.objects.all()
+            serializer = UserSerializer(users, many=True)
+            return Response(serializer.data)
+            
+            
 class LoginView(APIView):
       permission_classes = [permissions.AllowAny,]
       
@@ -38,7 +52,7 @@ class LoginView(APIView):
 class UserProfileView(generics.RetrieveUpdateAPIView):
       queryset = Account.objects.all()
       serializer_class = ProfileUpdateSerializer
-      permission_classes = [permissions.IsAuthenticated]
+      permission_classes = [permissions.AllowAny,]
       
       def get_object(self):
             return self.request.user
