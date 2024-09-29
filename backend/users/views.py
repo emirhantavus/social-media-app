@@ -69,16 +69,15 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
       
 class FollowView(APIView):
       permission_classes = [permissions.IsAuthenticated]
-      
-      def post(self,request,user_id):
-            user_to_follow = get_object_or_404(Account,id=user_id)
-            user = request.user
-            
-            if user == user_to_follow:
-                  return Response({'error':'U can not follow yourself'},status=status.HTTP_400_BAD_REQUEST)
-            
-            if Follow.objects.filter(follower=user,following=user_to_follow).exists():
-                  return Response({'error':'U are already following this user'},status=status.HTTP_400_BAD_REQUEST)
-            
-            Follow.objects.create(follower= user,following=user_to_follow)
-            return Response({'status':'U are followed this user'},status.HTTP_200_OK)
+
+      def post(self, request, user_id):
+            follower = request.user
+            following_user_id = user_id
+            follow_instance, created = Follow.objects.get_or_create(
+                follower=follower,
+                following_id=following_user_id
+            )     
+            if created:
+                return Response({'message': 'Followed successfully!'}, status=status.HTTP_201_CREATED)
+            else:
+                return Response({'message': 'You are already following this user.'}, status=status.HTTP_400_BAD_REQUEST)

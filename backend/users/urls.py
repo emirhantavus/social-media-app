@@ -20,7 +20,7 @@ urlpatterns = [
       path('profile/<int:pk>',UserProfileView.as_view(),name='user_profile'),
       path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
       path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
-      path('follow/<int:pk>/',FollowView.as_view(),name='follow'),
+      path('follow/<int:user_id>/',FollowView.as_view(),name='follow_user'),
       path('',UserList.as_view(),name='user_list'),
 ]
 
