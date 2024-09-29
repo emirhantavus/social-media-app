@@ -7,6 +7,7 @@ from rest_framework.views import APIView
 from django.contrib.auth import authenticate
 from django.db import IntegrityError
 from rest_framework import serializers
+from django.core.exceptions import PermissionDenied
 
 class RegisterView(generics.CreateAPIView):
       queryset = Account.objects.all()
@@ -50,9 +51,16 @@ class LoginView(APIView):
                   return Response({'error':'Invalid credentials.'},status.HTTP_400_BAD_REQUEST)
             
 class UserProfileView(generics.RetrieveUpdateAPIView):
-      queryset = Account.objects.all()
+      queryset = Profile.objects.all()
       serializer_class = ProfileUpdateSerializer
-      permission_classes = [permissions.AllowAny,]
+      permission_classes = [permissions.IsAuthenticatedOrReadOnly,]
       
       def get_object(self):
-            return self.request.user
+            profile = Profile.objects.get(user__id=self.kwargs['pk'])
+            return profile
+      
+      def update(self,request,*args,**kwargs):
+            profile = self.get_object()
+            if profile.user != request.user:
+                  raise PermissionDenied('You can only update your own profile.')
+            return super().update(request, *args , **kwargs)

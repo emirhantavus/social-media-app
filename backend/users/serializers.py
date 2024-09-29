@@ -47,15 +47,23 @@ class RegisterSerializer(serializers.ModelSerializer):
             return user
       
 class ProfileUpdateSerializer(serializers.ModelSerializer):
+      
       class Meta:
             model = Profile
-            fields = ['first_name','last_name','profile_photo','bio','date_of_birth','user__nickname']
+            fields = ['profile_photo','bio','date_of_birth',]
             
       def validate_nickname(self,value):
             user = self.context['request'].user
             if Account.objects.exclude(id=user.id).filter(nickname=value).exists():
                   raise serializers.ValidationError('this nickname is already in use')
             return value
+      
+      def update(self, instance, validated_data):
+            instance.profile_photo = validated_data.get('profile_photo', instance.profile_photo)
+            instance.bio = validated_data.get('bio', instance.bio)
+            instance.date_of_birth = validated_data.get('date_of_birth', instance.date_of_birth)
+            instance.save()
+            return instance
       
       
 class LoginSerializer(serializers.Serializer):
