@@ -2,6 +2,7 @@ from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
 from django.utils import timezone
 from django.conf import settings
+from django.contrib.auth import get_user_model
 
 class CustomUserManager(BaseUserManager):
       def create_user(self, email, password=None, **extra_fields):
@@ -27,7 +28,6 @@ class Account(AbstractBaseUser,PermissionsMixin):
       nickname = models.CharField(unique=True,max_length=30, null=True,blank=True)
       first_name = models.CharField(max_length=30, blank=True)
       last_name = models.CharField(max_length=30, blank=True)
-      followers = models.ManyToManyField('self', symmetrical=False, related_name='following', blank=True)
       
       is_staff = models.BooleanField(default=False) 
       is_superuser = models.BooleanField(default=False) 
@@ -50,3 +50,11 @@ class Profile(models.Model):
        
       def __str__(self):
             return self.user.email
+      
+      
+user = get_user_model()
+
+class Follow(models.Model):
+      follower = models.ForeignKey(user, related_name='following', on_delete=models.CASCADE)
+      following = models.ForeignKey(user, related_name='followers', on_delete=models.CASCADE)
+      created_at = models.DateTimeField(auto_now_add=True)

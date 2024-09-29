@@ -1,6 +1,6 @@
 from rest_framework import generics, permissions, status
-from users.models import Account , Profile
-from users.serializers import UserSerializer, RegisterSerializer, ProfileUpdateSerializer, LoginSerializer
+from users.models import Account , Profile , Follow
+from users.serializers import UserSerializer, RegisterSerializer, ProfileUpdateSerializer, LoginSerializer , FollowSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -8,6 +8,7 @@ from django.contrib.auth import authenticate
 from django.db import IntegrityError
 from rest_framework import serializers
 from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404
 
 class RegisterView(generics.CreateAPIView):
       queryset = Account.objects.all()
@@ -64,3 +65,20 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
             if profile.user != request.user:
                   raise PermissionDenied('You can only update your own profile.')
             return super().update(request, *args , **kwargs)
+      
+      
+class FollowView(APIView):
+      permission_classes = [permissions.IsAuthenticated]
+      
+      def post(self,request,user_id):
+            user_to_follow = get_object_or_404(Account,id=user_id)
+            user = request.user
+            
+            if user == user_to_follow:
+                  return Response({'error':'U can not follow yourself'},status=status.HTTP_400_BAD_REQUEST)
+            
+            if Follow.objects.filter(follower=user,following=user_to_follow).exists():
+                  return Response({'error':'U are already following this user'},status=status.HTTP_400_BAD_REQUEST)
+            
+            Follow.objects.create(follower= user,following=user_to_follow)
+            return Response({'status':'U are followed this user'},status.HTTP_200_OK)

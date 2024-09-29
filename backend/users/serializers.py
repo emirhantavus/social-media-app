@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from users.models import Account , Profile
+from users.models import Account , Profile , Follow
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -69,3 +69,12 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
       email = serializers.EmailField(required=True)
       password = serializers.CharField(required=True,write_only=True,style={'input_type':'password'})
+      
+class FollowSerializer(serializers.Serializer):
+      class Meta:
+            model = Follow
+            fields = ['follower', 'following']
+      
+      def create(self, validated_data):
+            follow_instance = Follow.objects.create(**validated_data)
+            return follow_instance
