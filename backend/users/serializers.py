@@ -49,10 +49,12 @@ class RegisterSerializer(serializers.ModelSerializer):
 class ProfileUpdateSerializer(serializers.ModelSerializer):
       followers_count = serializers.SerializerMethodField()
       following_count = serializers.SerializerMethodField()
+      followers = serializers.SerializerMethodField()
+      following = serializers.SerializerMethodField()
       
       class Meta:
             model = Profile
-            fields = ['profile_photo','bio','date_of_birth','followers_count','following_count']
+            fields = ['profile_photo','bio','date_of_birth','followers_count','following_count','followers','following']
             
       def validate_nickname(self,value):
             user = self.context['request'].user
@@ -71,6 +73,12 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
 
       def get_following_count(self, obj):
             return obj.user.following.count()
+      
+      def get_followers(self,obj):
+            return Follow.objects.filter(following=obj.user).values_list('follower__email', flat=True)
+      
+      def get_following(self,obj):
+            return Follow.objects.filter(follower=obj.user).values_list('following__email', flat=True)
       
 class LoginSerializer(serializers.Serializer):
       email = serializers.EmailField(required=True)
