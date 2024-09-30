@@ -81,3 +81,17 @@ class FollowView(APIView):
                 return Response({'message': 'Followed successfully!'}, status=status.HTTP_201_CREATED)
             else:
                 return Response({'message': 'You are already following this user.'}, status=status.HTTP_400_BAD_REQUEST)
+          
+      def delete(self,request,user_id):
+            follower = request.user
+            following_user_id = user_id
+            try:
+                  follow_instance = Follow.objects.get(
+                        follower=follower,
+                        following_id = following_user_id
+                  )
+                  follow_instance.delete()
+                  
+                  return Response({'message':'Unfollowed successfully!'},status=status.HTTP_200_OK)
+            except Follow.DoesNotExist:
+                  return Response({'message':'You are not following this user.'})
