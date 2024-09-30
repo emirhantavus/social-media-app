@@ -9,7 +9,8 @@ from users.views import (
       LoginView,
       UserProfileView,
       UserList,
-      FollowView
+      FollowView,
+      LogOutView,
 )
 from django.conf import settings
 from django.conf.urls.static import static
@@ -17,9 +18,10 @@ from django.conf.urls.static import static
 urlpatterns = [
       path('register/', RegisterView.as_view(), name='register'),
       path('login/', LoginView.as_view(), name='login'),
+      path('logout/',LogOutView.as_view(),name='logout'),
       path('profile/<int:pk>',UserProfileView.as_view(),name='user_profile'),
-      path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-      path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+      path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+      path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
       path('follow/<int:user_id>/',FollowView.as_view(),name='follow_user'),
       path('',UserList.as_view(),name='user_list'),
 ]

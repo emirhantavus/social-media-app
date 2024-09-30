@@ -9,6 +9,8 @@ from django.db import IntegrityError
 from rest_framework import serializers
 from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 class RegisterView(generics.CreateAPIView):
       queryset = Account.objects.all()
@@ -50,6 +52,17 @@ class LoginView(APIView):
                   },status.HTTP_200_OK)
             else:
                   return Response({'error':'Invalid credentials.'},status.HTTP_400_BAD_REQUEST)
+            
+class LogOutView(APIView):
+      permission_classes = [permissions.IsAuthenticated]
+      def post(self,request):
+            try:
+                  refresh_token = request.data.get("refresh")
+                  token = RefreshToken(refresh_token)
+                  token.blacklist()
+                  return Response({'message':'Log out successfuly.'},status=status.HTTP_200_OK)
+            except Exception as e:
+                  return Response({'message':str(e)},status=status.HTTP_400_BAD_REQUEST)
             
 class UserProfileView(generics.RetrieveUpdateAPIView):
       queryset = Profile.objects.all()
