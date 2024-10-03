@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from comments.models import Comment
 from posts.models import Post
 from comments.serializers import CommentSerializer
@@ -7,7 +7,7 @@ from django.core.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 
-class CommentCreateView(generics.CreateAPIView):
+class CommentCreateView(generics.ListCreateAPIView):
       serializer_class = CommentSerializer
       permission_classes = [permissions.IsAuthenticatedOrReadOnly]
       
@@ -17,7 +17,7 @@ class CommentCreateView(generics.CreateAPIView):
       
       def perform_create(self, serializer):
             post_id = self.kwargs.get('post_id')
-            post = Post.objects.get(id=post_id)
+            post = get_object_or_404(Post, id=post_id)
             serializer.save(author=self.request.user,post=post)
             
 
@@ -25,6 +25,11 @@ class CommentRetrieveUpdateAndDestroyView(generics.RetrieveDestroyAPIView):
       permission_classes = [permissions.IsAuthenticated]
       queryset = Comment.objects.all()
       serializer_class = CommentSerializer
+      
+      def get_object(self):
+            post_id = self.kwargs.get('post_id')
+            comment_id = self.kwargs.get('comment_id')
+            return get_object_or_404(Comment, post_id=post_id, id=comment_id)
       
       def perform_update(self,serializer):
             if self.request.user != serializer.instance.author:
