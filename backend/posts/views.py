@@ -14,7 +14,7 @@ class PostListView(generics.ListCreateAPIView):
       def perform_create(self, serializer):
             serializer.save(author=self.request.user)
             
-class PostRetriveAndUpdateView(generics.RetrieveDestroyAPIView):
+class PostRetrieveUpdateAndDestroyView(generics.RetrieveDestroyAPIView):
       permission_classes = [permissions.IsAuthenticated]
       queryset = Post.objects.all()
       serializer_class = PostSerializer
@@ -23,6 +23,7 @@ class PostRetriveAndUpdateView(generics.RetrieveDestroyAPIView):
             if self.request.user != serializer.instance.author:
                   raise PermissionDenied("U can only edit your own posts")
             serializer.save()
+            return Response({'message':'Post edited successfuly'},status.HTTP_200_OK)
             
       def perform_destroy(self, instance):
             if self.request.user != instance.author:
@@ -31,6 +32,6 @@ class PostRetriveAndUpdateView(generics.RetrieveDestroyAPIView):
             
       def delete(self, request, *args,**kwargs):
             instance = self.get_object()
-            print(instance)
             self.perform_destroy(instance)
             return Response({'message':'Post deleted successfuly'},status.HTTP_200_OK)
+      
