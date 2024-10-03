@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from comments.models import Comment
+from posts.models import Post
 from comments.serializers import CommentSerializer
 from rest_framework import generics , status , permissions
 from django.core.exceptions import PermissionDenied
@@ -7,12 +8,17 @@ from rest_framework.response import Response
 
 
 class CommentCreateView(generics.CreateAPIView):
-      queryset = Comment.objects.all()
       serializer_class = CommentSerializer
       permission_classes = [permissions.IsAuthenticatedOrReadOnly]
       
+      def get_queryset(self):
+            post_id = self.kwargs.get('post_id')
+            return Comment.objects.filter(post=post_id)
+      
       def perform_create(self, serializer):
-            serializer.save(author=self.request.user)
+            post_id = self.kwargs.get('post_id')
+            post = Post.objects.get(id=post_id)
+            serializer.save(author=self.request.user,post=post)
             
 
 class CommentRetrieveUpdateAndDestroyView(generics.RetrieveDestroyAPIView):
