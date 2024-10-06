@@ -28,7 +28,6 @@ class GetMovieByTitleView(APIView):
       def post(self, request):
             title = request.data.get('title', '')
             movies = Movie.objects.filter(title__icontains=title)
-
             if movies.exists():
                   movie_list = [
                   {
@@ -40,5 +39,5 @@ class GetMovieByTitleView(APIView):
                   }
                   for movie in movies
                 ] 
-                  return Response(movie_list)
+                  return Response({"movie_count":movies.count(),"movies":movie_list})
             return Response({"message": "Film bulunamadı"}, status=404)
