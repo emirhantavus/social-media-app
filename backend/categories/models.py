@@ -2,9 +2,9 @@ from django.db import models
 
 class Category(models.Model):
       CATEGORY_CHOICES = [
-            ('movie', 'Movie'),
-            ('series', 'Series'),
-            ('book', 'Book'),
+            ('film', 'Film'),
+            ('dizi', 'Dizi'),
+            ('kitap', 'Kitap'),
             ('anime', 'Anime'),
       ]
 
