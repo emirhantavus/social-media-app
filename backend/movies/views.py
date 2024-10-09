@@ -41,3 +41,6 @@ class GetMovieByTitleView(APIView):
                 ] 
                   return Response({"movie_count":movies.count(),"movies":movie_list})
             return Response({"message": "Film bulunamadı"}, status=404)
+
+
+#https://developer.themoviedb.org/reference/search-movie
