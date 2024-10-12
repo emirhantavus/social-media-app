@@ -64,6 +64,14 @@ class LogOutView(APIView):
             except Exception as e:
                   return Response({'message':str(e)},status=status.HTTP_400_BAD_REQUEST)
             
+class DeleteUserView(APIView):
+      permission_classes = [permissions.IsAuthenticated]
+      
+      def delete(self,request):
+            user = request.user
+            user.delete()
+            return Response({'message':'User deleted successfully.'},status=status.HTTP_200_OK)
+            
 class UserProfileView(generics.RetrieveUpdateAPIView):
       queryset = Profile.objects.all()
       serializer_class = ProfileUpdateSerializer
