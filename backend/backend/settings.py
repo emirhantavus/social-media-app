@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     'comments',
     'movies',
     'corsheaders',
-    'categories',
 ]
 
 MIDDLEWARE = [

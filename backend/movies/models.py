@@ -9,7 +9,7 @@ class Movie(models.Model):
       poster_path = models.URLField(null=True, blank=True)
       language = models.CharField(max_length=10, default='tr-TR')
       created_at = models.DateTimeField(auto_now_add=True)
-      category = models.ForeignKey(Category,on_delete=models.CASCADE)
+      category = models.ForeignKey(Category,on_delete=models.CASCADE, default=1)
       genres = models.ManyToManyField(Genre)
       
       def __str__(self):
