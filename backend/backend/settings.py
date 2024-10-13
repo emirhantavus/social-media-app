@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'movies',
     'corsheaders',
     'logs',
+    'django_currentuser',
 ]
 
 MIDDLEWARE = [
@@ -61,6 +62,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'logs.middleware.LogIPMiddleware',
+    'django_currentuser.middleware.ThreadLocalUserMiddleware',
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
