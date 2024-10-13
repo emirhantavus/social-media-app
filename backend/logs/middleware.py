@@ -6,7 +6,7 @@ class LogIPMiddleware:
             self.get_response = get_response
 
       def __call__(self, request):
-            ip_address = request.META.get('REMOTE_ADDR')
+            ip_address = request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR')
 
             if request.user.is_authenticated:
                   user = request.user

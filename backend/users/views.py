@@ -11,6 +11,8 @@ from django.core.exceptions import PermissionDenied
 from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from logs.models import IPLog
+from django.utils import timezone
 
 class RegisterView(generics.CreateAPIView):
       queryset = Account.objects.all()
@@ -45,6 +47,12 @@ class LoginView(APIView):
             user = authenticate(request, email=email,password=password)
             
             if user is not None:
+                  ip_address = request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR')
+                  ip_log, created = IPLog.objects.get_or_create(user=user, ip_address=ip_address)
+                  if created:
+                        ip_log.last_logged = timezone.now()
+                        ip_log.save()
+                        
                   refresh = RefreshToken.for_user(user)
                   return Response({
                         'refresh': str(refresh),
