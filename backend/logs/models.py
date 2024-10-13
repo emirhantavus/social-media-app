@@ -10,4 +10,4 @@ class IPLog(models.Model):
       last_logged = models.DateTimeField(default=timezone.now)
     
       def __str__(self):
-            return f'{self.user.username} - {self.ip_address}'
+            return f'{self.user.email} - {self.ip_address}'
