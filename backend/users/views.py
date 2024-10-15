@@ -86,14 +86,15 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
       permission_classes = [permissions.IsAuthenticatedOrReadOnly,]
       
       def get_object(self):
-            profile = Profile.objects.get(user__id=self.kwargs['pk'])
+            profile = Profile.objects.get(user=self.request.user)
             return profile
       
       def update(self,request,*args,**kwargs):
             profile = self.get_object()
-            if profile.user != request.user:
-                  raise PermissionDenied('You can only update your own profile.')
-            return super().update(request, *args , **kwargs)
+            serializer = self.get_serializer(profile, data=request.data,partial=True)
+            serializer.is_valid(raise_exception=True)
+            self.perform_update(serializer)
+            return Response(serializer.data)
       
       
 class FollowView(APIView):
