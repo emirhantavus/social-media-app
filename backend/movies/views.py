@@ -4,10 +4,15 @@ from rest_framework.views import APIView
 from movies.models import Movie
 from movies.serializers import MovieSerializer
 import requests
+from rest_framework.pagination import PageNumberPagination
+
+class MoviePagination(PageNumberPagination):
+      page_size = 20
 
 class MovieListCreateView(generics.ListCreateAPIView):
-      queryset = Movie.objects.all()
+      queryset = Movie.objects.all().order_by('id')
       serializer_class = MovieSerializer
+      pagination_class = MoviePagination
 
 class MovieRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
       queryset = Movie.objects.all()
