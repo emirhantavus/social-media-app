@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     'corsheaders',
     'logs',
     'django_currentuser',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -151,6 +152,7 @@ REST_FRAMEWORK = {
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 from datetime import timedelta
@@ -183,16 +185,16 @@ SIMPLE_JWT = {
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
-    'handlers': {
-        'file': {
-            'level': 'DEBUG',
-            'class': 'logging.FileHandler',
-            'filename': 'debug.log',
-        },
-    },
+    #'handlers': {
+     #   'file': {
+      #      'level': 'DEBUG',
+       #     'class': 'logging.FileHandler',
+        #    'filename': 'debug.log',
+        #},
+    #},
     'loggers': {
         'django': {
-            'handlers': ['file'],
+            #'handlers': ['file'],
             'level': 'DEBUG',
             'propagate': True,
         },
