@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     'logs',
     'django_currentuser',
     'drf_spectacular',
+    'series',
 ]
 
 MIDDLEWARE = [

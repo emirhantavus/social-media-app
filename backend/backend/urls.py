@@ -10,6 +10,7 @@ urlpatterns = [
     path('api/v1/posts/',include('posts.urls')),
     path('api/v1/comments/',include('comments.urls')),
     path('api/v1/movies/',include('movies.urls')),
+    path('api/v1/series/',include('series.urls')),
     path('api/v1/categories/',include('categories.urls')),
     path('api/v1/logs/',include('logs.urls')),
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
