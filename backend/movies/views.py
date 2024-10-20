@@ -5,6 +5,7 @@ from movies.models import Movie
 from movies.serializers import MovieSerializer
 import requests
 from rest_framework.pagination import PageNumberPagination
+from datetime import datetime
 
 api_key = '51994fc2e7969ea0e9a79d6a0f95fa63'
 language = 'tr-TR'
@@ -105,6 +106,10 @@ class GetMoviesByYearView(APIView):
             if not year:
                   return Response({'message':'Year field is required'},status=status.HTTP_400_BAD_REQUEST)
             
+            current_year = datetime.now().year
+            if int(year) > current_year:
+                  return Response({'message':'Year must be a valid past year'},status=status.HTTP_400_BAD_REQUEST)
+            
             movies_url = f'https://api.themoviedb.org/3/discover/movie?api_key={api_key}&language={language}&year={year}'
             movie_response = requests.get(movies_url)
             if movie_response.status_code == 200:
@@ -119,15 +124,28 @@ class GetMoviesByYearView(APIView):
 
 class GetTopMoviesView(APIView):
       def get(self,request):
+            top_movies = []
+            total_movies = 100
+            movies_per_page = 20
+            total_pages = total_movies // movies_per_page + (total_movies % movies_per_page > 0)
             sort_by = 'vote_average.desc'
-            movies_url = f'https://api.themoviedb.org/3/discover/movie?api_key={api_key}&language={language}&sort_by={sort_by}'
-            movie_response = requests.get(movies_url)
-            if movie_response.status_code == 200:
-                  movie_response = movie_response.json().get('results',[])
-                  selected_movies = [
-                        {'title':movie['title'],'original_title':movie['original_title']}
-                        for movie in movie_response
-                  ]
-                  return Response(selected_movies,status=status.HTTP_200_OK)
-            return Response({'message':'error'})
+            movie_rank = 1
+            for page in range(1,total_pages + 1):
+                  movies_url = f'https://api.themoviedb.org/3/discover/movie?api_key={api_key}&language={language}&sort_by={sort_by}&page={page}&vote_count.gte=1000'
+                  movie_response = requests.get(movies_url)
+                  if movie_response.status_code == 200:
+                        movie_response = movie_response.json().get('results',[])
+                        top_movies += [
+                              {'rank': movie_rank + i,
+                               'title':movie['title'],
+                               'original_title':movie['original_title'],
+                               'vote_average':movie['vote_average']}
+                              for i,movie in enumerate(movie_response)
+                        ]
+                        movie_rank += len(movie_response)
+                        if len(top_movies) >= total_movies:
+                              break
+                  else:
+                        return Response({'message':'error.'})
+            return Response(top_movies[:total_movies],status=status.HTTP_200_OK)
 #https://developer.themoviedb.org/reference/search-movie
