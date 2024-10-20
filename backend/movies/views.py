@@ -1,10 +1,13 @@
-from rest_framework import generics, permissions
+from rest_framework import generics, permissions , status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from movies.models import Movie
 from movies.serializers import MovieSerializer
 import requests
 from rest_framework.pagination import PageNumberPagination
+
+api_key = '51994fc2e7969ea0e9a79d6a0f95fa63'
+language = 'tr-TR'
 
 class MoviePagination(PageNumberPagination):
       page_size = 20
@@ -20,8 +23,6 @@ class MovieRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
 
 class GetMoviesView(APIView):
       def get(self, request):
-            api_key = '51994fc2e7969ea0e9a79d6a0f95fa63'
-            language = 'tr-TR'
             url = f'https://api.themoviedb.org/3/movie/popular?api_key={api_key}&language={language}'
 
             response = requests.get(url)
@@ -47,5 +48,30 @@ class GetMovieByTitleView(APIView):
                   return Response({"movie_count":movies.count(),"movies":movie_list})
             return Response({"message": "Film bulunamadı"}, status=404)
 
-
+class GetMovieByActorView(APIView):
+      def post(self, request):
+            actor = request.data.get('actor')
+            
+            if not actor:
+                  return Response({'message':'Actor field is required'},status=status.HTTP_400_BAD_REQUEST)
+            
+            actor_url = f'https://api.themoviedb.org/3/search/person?api_key={api_key}&language={language}&query={actor}'
+            actor_response = requests.get(actor_url)
+            if actor_response.status_code == 200:
+                  actor_data = actor_response.json().get('results', [])
+                  if actor_data:
+                        actor_id = actor_data[0]['id']
+                        movies_url = f'https://api.themoviedb.org/3/discover/movie?api_key={api_key}&language={language}&with_cast={actor_id}'
+                        movie_response = requests.get(movies_url)
+                        if movie_response.status_code == 200:
+                              movie_data = movie_response.json().get('results',[])
+                              filtered_movies = [
+                                    {'title': movie['title'] , 'original_title':movie['original_title']}
+                                    for movie in movie_data
+                              ]
+                              return Response(filtered_movies)
+            return Response({'message': 'Error fetching actor movies'}, status=status.HTTP_400_BAD_REQUEST)
+      
+      
+      
 #https://developer.themoviedb.org/reference/search-movie
