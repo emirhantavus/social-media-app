@@ -72,6 +72,30 @@ class GetMovieByActorView(APIView):
                               return Response(filtered_movies)
             return Response({'message': 'Error fetching actor movies'}, status=status.HTTP_400_BAD_REQUEST)
       
-      
+
+class GetMoviesByGenreView(APIView):
+      def post(self,request):
+            genre = request.data.get('genre')
+            
+            if not genre:
+                  return Response({'message':'Genre field is required.'})
+            
+            genre_url = f"https://api.themoviedb.org/3/genre/movie/list?api_key={api_key}&language={language}"
+            genre_response = requests.get(genre_url)
+            
+            if genre_response.status_code == 200:
+                  genres = genre_response.json().get('genres',[])
+                  genre_id = next((g['id'] for g in genres if g['name'].lower() == genre.lower()),None)
+                  if genre_id:
+                        movies_url = f"https://api.themoviedb.org/3/discover/movie?api_key={api_key}&language={language}&with_genres={genre_id}"
+                        movie_response = requests.get(movies_url)
+                        if movie_response.status_code == 200:
+                              movie_data = movie_response.json().get('results',[])
+                              filtered_movies = [
+                                    {'title':movie['title'],'original_title':movie['original_title']}
+                                    for movie in movie_data
+                              ]
+                              return Response(filtered_movies)
+            return Response({'message':'Error.'})
       
 #https://developer.themoviedb.org/reference/search-movie
