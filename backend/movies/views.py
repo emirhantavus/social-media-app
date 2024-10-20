@@ -98,4 +98,36 @@ class GetMoviesByGenreView(APIView):
                               return Response(filtered_movies)
             return Response({'message':'Error.'})
       
+class GetMoviesByYearView(APIView):
+      def post(self,request):
+            year = request.data.get('year')
+            
+            if not year:
+                  return Response({'message':'Year field is required'},status=status.HTTP_400_BAD_REQUEST)
+            
+            movies_url = f'https://api.themoviedb.org/3/discover/movie?api_key={api_key}&language={language}&year={year}'
+            movie_response = requests.get(movies_url)
+            if movie_response.status_code == 200:
+                  movie_response = movie_response.json().get('results',[])
+                  selected_movies = [
+                        {'title':movie['title'],'original_title':movie['original_title']}
+                        for movie in movie_response
+                  ]
+                  return Response(selected_movies,status=status.HTTP_200_OK)
+            return Response({'message':'error'},status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetTopMoviesView(APIView):
+      def get(self,request):
+            sort_by = 'vote_average.desc'
+            movies_url = f'https://api.themoviedb.org/3/discover/movie?api_key={api_key}&language={language}&sort_by={sort_by}'
+            movie_response = requests.get(movies_url)
+            if movie_response.status_code == 200:
+                  movie_response = movie_response.json().get('results',[])
+                  selected_movies = [
+                        {'title':movie['title'],'original_title':movie['original_title']}
+                        for movie in movie_response
+                  ]
+                  return Response(selected_movies,status=status.HTTP_200_OK)
+            return Response({'message':'error'})
 #https://developer.themoviedb.org/reference/search-movie
