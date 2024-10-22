@@ -58,3 +58,29 @@ class GetSeriesByActor(APIView):
                         ]
                         return Response(selected_series,status=status.HTTP_200_OK)
             return Response({'message':'Error.'})
+      
+      
+class GetTopSeriesByYear(APIView):
+      def post(self,request):
+            year = request.data.get('year')
+            sort_by = "vote_average.desc"
+            
+            if not year:
+                  return Response({'message':'year field is required'},status=status.HTTP_400_BAD_REQUEST)
+            
+            if not isinstance(year,int):
+                  return Response({'message':'Year field must be an integer'},status=status.HTTP_400_BAD_REQUEST)
+            
+            if year < 1000 or year > 9999:
+                  return Response({'message':'Year must be a 4-digit number'},status=status.HTTP_400_BAD_REQUEST)
+            
+            series_url = f'https://api.themoviedb.org/3/discover/tv?api_key={api_key}&language={language}&first_air_date_year={year}&sort_by={sort_by},'
+            series_response = requests.get(series_url)
+            if series_response.status_code == 200:
+                  series_response = series_response.json().get('results',[])
+                  selected_series = [
+                        {'title': series['name'], 'original_title': series['original_name']}
+                        for series in series_response
+                  ]
+                  return Response(selected_series,status=status.HTTP_200_OK)
+            return Response({'message':'Error'})
