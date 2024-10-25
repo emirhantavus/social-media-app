@@ -24,9 +24,16 @@ class GenerateAPIKey(APIView):
       permission_classes = [permissions.IsAuthenticated]
       def post(self,request):
             email = request.user.email
+            check_email = UserAPIKey.objects.get(email=email)
             
             if not email:
                   return Response({'message':'Email is required.'},status=status.HTTP_401_UNAUTHORIZED)
+            
+            if check_email:
+                  return Response({
+                        'message':'U already have a key.',
+                        'api_key':check_email.api_key
+                        }, status=status.HTTP_200_OK)
             
             api_key, key = APIKey.objects.create_key(name=email)
             UserAPIKey.objects.create(email=email,api_key=key)
@@ -53,3 +60,19 @@ class ListAllAPIKey(APIView):
             serializer = UserAPIKeySerializer(keys,many=True)
             return Response({'keys':serializer.data},status=status.HTTP_200_OK)
             
+class DeleteAPIkey(APIView):
+      permission_classes = [permissions.IsAdminUser]
+      
+      def post(self,request):
+            key_id = request.data.get('id')
+            
+            if not key_id:
+                  return Response({'message':'Key id is required'},status=status.HTTP_400_BAD_REQUEST)
+            
+            try:
+                  api_key = UserAPIKey.objects.get(id=key_id)        
+            except:
+                  return Response({'message':'Key id not found'},status=status.HTTP_404_NOT_FOUND)
+            
+            api_key.delete()
+            return Response({'message':'API key deleted successfully'},status=status.HTTP_200_OK)
