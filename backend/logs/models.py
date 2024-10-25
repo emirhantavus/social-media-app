@@ -29,3 +29,12 @@ class ActionLog(models.Model):
 
       def __str__(self):
           return f"{self.user.email} performed {self.action} on {self.model_name} at {self.timestamp}"
+      
+      
+class UserAPIKey(models.Model):
+    email = models.EmailField()
+    api_key = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    
+    def __str__(self):
+        return f"{self.email} - {self.api_key}"
