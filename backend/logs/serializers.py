@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from logs.models import IPLog , ActionLog
+from logs.models import IPLog , ActionLog , UserAPIKey
 
 class IPLogSerializers(serializers.ModelSerializer):
       user = serializers.SerializerMethodField()
@@ -15,3 +15,8 @@ class ActionLogSerializers(serializers.ModelSerializer):
       class Meta:
             model = ActionLog
             fields = ('user_email','action','model_name','object_id','timestamp','detail')
+            
+class UserAPIKeySerializer(serializers.ModelSerializer):
+      class Meta:
+            model = UserAPIKey
+            fields = ('id','email','api_key','created_at')

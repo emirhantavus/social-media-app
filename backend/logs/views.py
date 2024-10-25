@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import generics , permissions , status
 from logs.models import IPLog , ActionLog
-from logs.serializers import IPLogSerializers , ActionLogSerializers
+from logs.serializers import IPLogSerializers , ActionLogSerializers , UserAPIKeySerializer
 from rest_framework_api_key.permissions import HasAPIKey
 #from logs.permissions import IsAdminAndHasAPIKey
 from rest_framework.views import APIView
@@ -32,3 +32,24 @@ class GenerateAPIKey(APIView):
             UserAPIKey.objects.create(email=email,api_key=key)
             
             return Response({'api_key':key},status=status.HTTP_200_OK)
+      
+class RetrieveAPIKey(APIView):
+      permission_classes = [permissions.IsAuthenticated]
+      def get(self, request):
+            email = request.user.email
+            
+            try:
+                  user_api_key = UserAPIKey.objects.get(email=email)
+                  return Response({'email':user_api_key.email,'api_key':user_api_key.api_key},status=status.HTTP_200_OK)
+            
+            except UserAPIKey.DoesNotExist:
+                  return Response({'message':'API key not found for this email.'},status=status.HTTP_404_NOT_FOUND)
+            
+class ListAllAPIKey(APIView):
+      permission_classes = [permissions.IsAdminUser]
+      
+      def get(self,request):
+            keys = UserAPIKey.objects.all()
+            serializer = UserAPIKeySerializer(keys,many=True)
+            return Response({'keys':serializer.data},status=status.HTTP_200_OK)
+            
