@@ -50,12 +50,20 @@ class LoginView(APIView):
             except Account.DoesNotExist:
                   return Response({'message':'Wrong email'},status=status.HTTP_400_BAD_REQUEST)
             
-            authenticated_user = authenticate(request, email=email,password=password)
-            
             ip_address = request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR')
+            login_attempt, created = LoginAttempt.objects.get_or_create(user=user, ip_address=ip_address)
+            
+            if login_attempt.is_blocked and login_attempt.blocked_until > timezone.now():
+                  return Response(
+                              {'message':
+                              f'Too many failed attempts. U are blocked until {login_attempt.blocked_until.strftime("%Y-%m-%d %H:%M:%S")}'},
+                              status=status.HTTP_403_FORBIDDEN)
+            
+            authenticated_user = authenticate(request, email=email, password=password)
             
             if authenticated_user is not None:
-                  LoginAttempt.objects.filter(user=user, ip_address=ip_address).update(attempts=0,is_blocked=False,blocked_until=None)
+                  login_attempt.reset_attempts()
+                  login_attempt.save()
                   ip_log, created = IPLog.objects.get_or_create(user=user, ip_address=ip_address)
                   if created:
                         ip_log.last_logged = timezone.now()
@@ -65,22 +73,25 @@ class LoginView(APIView):
                         'refresh': str(refresh),
                         'access': str(refresh.access_token),
                   },status.HTTP_200_OK)
-            else:
-                  login_attempt, created = LoginAttempt.objects.get_or_create(user=user,ip_address=ip_address)
-                  if login_attempt.is_blocked and login_attempt.blocked_until > timezone.now():
-                        return Response(
-                              {'message':
-                              f'Too many failed attempts. U are blocked until {login_attempt.blocked_until.strftime("%Y-%m-%d %H:%M:%S")}'},
-                              status=status.HTTP_403_FORBIDDEN)
-                  
+            else:                   
                   login_attempt.attempts += 1
                   login_attempt.last_attempt = timezone.now()
                   
-                  if login_attempt.attempts >= 5:
+                  remaining_attempts = 5 - login_attempt.attempts
+                  
+                  if remaining_attempts > 0:
+                        login_attempt.save()
+                        return Response({'error': f'Wrong password. You have {remaining_attempts} attempts left'},status=status.HTTP_400_BAD_REQUEST)
+                  
+                  if remaining_attempts == 0:
                         login_attempt.block()
+                        login_attempt.save()
+                        return Response(
+                              {'message': f'Too many failed attempts. You are blocked until {login_attempt.blocked_until.strftime("%Y-%m-%d %H:%M:%S")}'},
+                              status=status.HTTP_403_FORBIDDEN)
                   login_attempt.save()
                   
-                  return Response({'error':'error !!'},status=status.HTTP_400_BAD_REQUEST)
+                  return Response({'error':'error'},status=status.HTTP_400_BAD_REQUEST)
                   
             
             
