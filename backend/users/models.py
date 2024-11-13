@@ -58,3 +58,26 @@ class Follow(models.Model):
       follower = models.ForeignKey(user, related_name='following', on_delete=models.CASCADE)
       following = models.ForeignKey(user, related_name='followers', on_delete=models.CASCADE)
       created_at = models.DateTimeField(auto_now_add=True)
+      
+
+################################## ###################################################
+# 5 times Wrong login attempts
+
+class LoginAttempt(models.Model):
+      user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True,blank=True)
+      ip_address = models.GenericIPAddressField()
+      attempts = models.IntegerField(default=0)
+      last_attempt = models.DateTimeField(auto_now=True)
+      is_blocked = models.BooleanField(default=False)
+      blocked_until = models.DateTimeField(null=True,blank=True)
+      
+      def block(self):
+            self.is_blocked = True
+            self.blocked_until = timezone.now() + timezone.timedelta(minutes=15) #block 15 mins
+            self.save()
+            
+      def reset_attempts(self):
+            self.attempts = 0
+            self.is_blocked = False
+            self.blocked_until = None
+            self.save()
