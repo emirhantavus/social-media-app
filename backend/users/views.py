@@ -1,5 +1,5 @@
 from rest_framework import generics, permissions, status
-from users.models import Account , Profile , Follow
+from users.models import Account , Profile , Follow , LoginAttempt
 from users.serializers import UserSerializer, RegisterSerializer, ProfileUpdateSerializer, LoginSerializer , FollowSerializer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.response import Response
@@ -41,25 +41,48 @@ class LoginView(APIView):
       def post(self,request):
             serializer = LoginSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
+            
             email = serializer.validated_data.get('email')
             password = serializer.validated_data.get('password')
             
-            user = authenticate(request, email=email,password=password)
+            try:
+                  user = Account.objects.get(email=email)
+            except Account.DoesNotExist:
+                  return Response({'message':'Wrong email'},status=status.HTTP_400_BAD_REQUEST)
             
-            if user is not None:
-                  ip_address = request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR')
+            authenticated_user = authenticate(request, email=email,password=password)
+            
+            ip_address = request.META.get('HTTP_X_FORWARDED_FOR') or request.META.get('REMOTE_ADDR')
+            
+            if authenticated_user is not None:
+                  LoginAttempt.objects.filter(user=user, ip_address=ip_address).update(attempts=0,is_blocked=False,blocked_until=None)
                   ip_log, created = IPLog.objects.get_or_create(user=user, ip_address=ip_address)
                   if created:
                         ip_log.last_logged = timezone.now()
                         ip_log.save()
-                        
                   refresh = RefreshToken.for_user(user)
                   return Response({
                         'refresh': str(refresh),
                         'access': str(refresh.access_token),
                   },status.HTTP_200_OK)
             else:
-                  return Response({'error':'Invalid credentials.'},status.HTTP_400_BAD_REQUEST)
+                  login_attempt, created = LoginAttempt.objects.get_or_create(user=user,ip_address=ip_address)
+                  if login_attempt.is_blocked and login_attempt.blocked_until > timezone.now():
+                        return Response(
+                              {'message':
+                              f'Too many failed attempts. U are blocked until {login_attempt.blocked_until.strftime("%Y-%m-%d %H:%M:%S")}'},
+                              status=status.HTTP_403_FORBIDDEN)
+                  
+                  login_attempt.attempts += 1
+                  login_attempt.last_attempt = timezone.now()
+                  
+                  if login_attempt.attempts >= 5:
+                        login_attempt.block()
+                  login_attempt.save()
+                  
+                  return Response({'error':'error !!'},status=status.HTTP_400_BAD_REQUEST)
+                  
+            
             
 class LogOutView(APIView):
       permission_classes = [permissions.IsAuthenticated]
