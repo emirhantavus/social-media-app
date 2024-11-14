@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from logs.models import UserAPIKey
 from rest_framework_api_key.models import APIKey
 from users.models import LoginAttempt
+from users.serializers import LoginAttemptSerializer
 
 
 class ListIPLogsView(generics.ListAPIView):
@@ -79,6 +80,7 @@ class DeleteAPIkey(APIView):
             api_key.delete()
             return Response({'message':'API key deleted successfully'},status=status.HTTP_200_OK)
       
-class ListAllAttempts(generics.ListAPIView):
+class ListAllAttemptsView(generics.ListAPIView):
       permission_classes = [permissions.IsAdminUser]
       queryset = LoginAttempt.objects.all()
+      serializer_class = LoginAttemptSerializer

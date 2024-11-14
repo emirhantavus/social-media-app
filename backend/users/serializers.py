@@ -94,6 +94,7 @@ class FollowSerializer(serializers.Serializer):
             return follow_instance
       
 class LoginAttemptSerializer(serializers.ModelSerializer):
+      email = serializers.CharField(source='user.email')
       class Meta:
             model = LoginAttempt
-            fields = '__all__'
+            fields = ['id','email','ip_address']
