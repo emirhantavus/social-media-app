@@ -8,6 +8,8 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from logs.models import UserAPIKey
 from rest_framework_api_key.models import APIKey
+from users.models import LoginAttempt
+
 
 class ListIPLogsView(generics.ListAPIView):
       permission_classes = [HasAPIKey]
@@ -76,3 +78,7 @@ class DeleteAPIkey(APIView):
             
             api_key.delete()
             return Response({'message':'API key deleted successfully'},status=status.HTTP_200_OK)
+      
+class ListAllAttempts(generics.ListAPIView):
+      permission_classes = [permissions.IsAdminUser]
+      queryset = LoginAttempt.objects.all()

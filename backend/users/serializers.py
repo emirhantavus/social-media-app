@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from users.models import Account , Profile , Follow
+from users.models import Account , Profile , Follow , LoginAttempt
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -92,3 +92,8 @@ class FollowSerializer(serializers.Serializer):
       def create(self, validated_data):
             follow_instance = Follow.objects.create(**validated_data)
             return follow_instance
+      
+class LoginAttemptSerializer(serializers.ModelSerializer):
+      class Meta:
+            model = LoginAttempt
+            fields = '__all__'
