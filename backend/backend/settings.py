@@ -164,8 +164,11 @@ REST_FRAMEWORK = {
         "rest_framework_api_key.permissions.HasAPIKey",
     ],
     'DEFAULT_THROTTLE_RATES': {
-        'anon': '5/minute',  
+        'anon': '10/minute',  
         'user': '1000/day',
+        'login': '10/minute',
+        'user_list': '10/hour',
+        'follow': '50/day',
     },
 }
 

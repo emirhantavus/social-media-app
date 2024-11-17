@@ -14,7 +14,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from logs.models import IPLog
 from django.utils import timezone
 from django_ratelimit.decorators import ratelimit
-from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle , ScopedRateThrottle
 
 class RegisterView(generics.CreateAPIView):
       queryset = Account.objects.all()
@@ -31,6 +31,10 @@ class RegisterView(generics.CreateAPIView):
                   raise serializers.ValidationError("Profile already exists.")
             
 class UserList(APIView):
+      permission_classes = [permissions.IsAuthenticated]
+      throttle_classes = [ScopedRateThrottle]
+      throttle_scope = 'user_list'
+      
       def get(self,request):
             users = Account.objects.all()
             serializer = UserSerializer(users, many=True)
@@ -38,7 +42,9 @@ class UserList(APIView):
                         
 class LoginView(APIView):
       permission_classes = [permissions.AllowAny,]
-      
+      throttle_classes = [ScopedRateThrottle]
+      throttle_scope = 'login'
+    
       def post(self,request):
             serializer = LoginSerializer(data=request.data)
             serializer.is_valid(raise_exception=True)
@@ -133,7 +139,9 @@ class UserProfileView(generics.RetrieveUpdateAPIView):
       
       
 class FollowView(APIView):
-      permission_classes = [permissions.IsAuthenticated]
+      permission_classes = [permissions.IsAuthenticated],
+      throttle_classes = [ScopedRateThrottle]
+      throttle_scope = 'follow'
 
       def post(self, request, user_id):
             follower = request.user

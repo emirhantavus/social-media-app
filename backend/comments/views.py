@@ -6,11 +6,13 @@ from rest_framework import generics , status , permissions
 from django.core.exceptions import PermissionDenied
 from rest_framework.response import Response
 from django_ratelimit.decorators import ratelimit
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
-@ratelimit(key='ip', rate='5/m', method='ALL', block=True)
+
 class CommentCreateView(generics.ListCreateAPIView):
       serializer_class = CommentSerializer
       permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+      throttle_classes = [UserRateThrottle]
       
       def get_queryset(self):
             post_id = self.kwargs.get('post_id')
