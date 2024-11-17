@@ -5,8 +5,9 @@ from comments.serializers import CommentSerializer
 from rest_framework import generics , status , permissions
 from django.core.exceptions import PermissionDenied
 from rest_framework.response import Response
+from django_ratelimit.decorators import ratelimit
 
-
+@ratelimit(key='ip', rate='5/m', method='ALL', block=True)
 class CommentCreateView(generics.ListCreateAPIView):
       serializer_class = CommentSerializer
       permission_classes = [permissions.IsAuthenticatedOrReadOnly]

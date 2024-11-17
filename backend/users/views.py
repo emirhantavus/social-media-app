@@ -13,6 +13,8 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from logs.models import IPLog
 from django.utils import timezone
+from django_ratelimit.decorators import ratelimit
+from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 
 class RegisterView(generics.CreateAPIView):
       queryset = Account.objects.all()
@@ -33,8 +35,7 @@ class UserList(APIView):
             users = Account.objects.all()
             serializer = UserSerializer(users, many=True)
             return Response(serializer.data)
-            
-            
+                        
 class LoginView(APIView):
       permission_classes = [permissions.AllowAny,]
       

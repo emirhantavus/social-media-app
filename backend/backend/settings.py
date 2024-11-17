@@ -163,6 +163,10 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework_api_key.permissions.HasAPIKey",
     ],
+    'DEFAULT_THROTTLE_RATES': {
+        'anon': '5/minute',  
+        'user': '1000/day',
+    },
 }
 
 from datetime import timedelta
