@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     'drf_spectacular',
     'series',
     'rest_framework_api_key', 
+    'notifications',
 ]
 
 MIDDLEWARE = [
