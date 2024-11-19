@@ -7,7 +7,7 @@ from django.core.exceptions import PermissionDenied
 from rest_framework.response import Response
 
 class PostListView(generics.ListCreateAPIView):
-      permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+      permission_classes = [permissions.AllowAny,]
       queryset = Post.objects.all().order_by('-created_at')
       serializer_class = PostSerializer
       

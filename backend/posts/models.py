@@ -17,6 +17,7 @@ class Post(models.Model):
             on_delete=models.CASCADE
       )
       content_type = models.CharField(max_length=20,choices=CONTENT_TYPES)
+      title = models.CharField(max_length=100, null=True)
       content = models.TextField()
       media = models.FileField(upload_to='post_media',null=True,blank=True)
       created_at = models.DateTimeField(auto_now_add=True)
