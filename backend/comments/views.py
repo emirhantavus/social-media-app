@@ -7,7 +7,7 @@ from django.core.exceptions import PermissionDenied
 from rest_framework.response import Response
 from django_ratelimit.decorators import ratelimit
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
-
+from comments.services import post_comment
 
 class CommentCreateView(generics.ListCreateAPIView):
       serializer_class = CommentSerializer
@@ -21,7 +21,10 @@ class CommentCreateView(generics.ListCreateAPIView):
       def perform_create(self, serializer):
             post_id = self.kwargs.get('post_id')
             post = get_object_or_404(Post, id=post_id)
-            serializer.save(author=self.request.user,post=post)
+            
+            #create comment and notification
+            comment = serializer.save(author=self.request.user,post=post)
+            post_comment(user=self.request.user,post=post, comment_text=comment.content)
             
 
 class CommentRetrieveUpdateAndDestroyView(generics.RetrieveUpdateDestroyAPIView):
