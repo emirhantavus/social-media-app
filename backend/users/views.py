@@ -15,6 +15,7 @@ from logs.models import IPLog
 from django.utils import timezone
 from django_ratelimit.decorators import ratelimit
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle , ScopedRateThrottle
+from notifications.tasks import send_email_welcome
 
 class RegisterView(generics.CreateAPIView):
       queryset = Account.objects.all()
@@ -25,6 +26,7 @@ class RegisterView(generics.CreateAPIView):
             user = serializer.save()
             try:
                   Profile.objects.get(user=user)
+                  send_email_welcome.apply_async(args=[user.email])
             except Profile.DoesNotExist:
                   Profile.objects.create(user=user)
             except IntegrityError:

@@ -11,3 +11,14 @@ def send_email_notification(email, subject, message):
             recipient_list=[email],
             fail_silently=False
       )
+      
+@shared_task
+def send_email_welcome(email):
+      # send mail for new members
+      send_mail(
+            subject='Welcome',
+            message='You have successfully registered. ',
+            from_email='test@gmail.com',
+            recipient_list=[email,],
+            fail_silently=True
+      )
