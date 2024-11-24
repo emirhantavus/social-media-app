@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from django_ratelimit.decorators import ratelimit
 from rest_framework.throttling import AnonRateThrottle, UserRateThrottle
 from comments.services import post_comment
+from notifications.utils import create_notification
 
 class CommentCreateView(generics.ListCreateAPIView):
       serializer_class = CommentSerializer
@@ -24,7 +25,10 @@ class CommentCreateView(generics.ListCreateAPIView):
             
             #create comment and notification
             comment = serializer.save(author=self.request.user,post=post)
-            post_comment(user=self.request.user,post=post, comment_text=comment.content)
+            create_notification(
+            user=post.author,
+            message=f"{self.request.user.email} commented on your post: {post.title}"
+        )
             
 
 class CommentRetrieveUpdateAndDestroyView(generics.RetrieveUpdateDestroyAPIView):

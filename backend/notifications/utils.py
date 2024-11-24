@@ -1,5 +1,7 @@
 from notifications.models import Notification
 from notifications.tasks import send_email_notification
+from asgiref.sync import async_to_sync
+from channels.layers import get_channel_layer
 
 def create_notification(user, message):
       if not user or not message:
@@ -11,3 +13,15 @@ def create_notification(user, message):
       )
       
       send_email_notification.delay(user.email, "New Notification",message)
+      
+      ###websocket
+      
+      channel_layer = get_channel_layer()
+      group_name = f"user_{user.id}"
+      async_to_sync(channel_layer.group_send)(
+            group_name,
+            {
+                  "type":"notification_message",
+                  "message":message,
+            }
+      )
